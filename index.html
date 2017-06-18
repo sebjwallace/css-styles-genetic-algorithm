@@ -1,0 +1,174 @@
+<html>
+
+  <head>
+    <title>nbot</title>
+  </head>
+
+  <body>
+    <button id="open">Repo</button>
+    <button id="close">X</button>
+    <div id="repository">
+      <div id="container">
+        <div id="directoryContainer">
+          <select multiple id="directory"></select>
+          <button id="crossover">Crossover</button>
+          <button id="compose">Compose</button>
+        </div>
+        <div id="display"></div>
+      </div>
+    </div>
+    <div id="panel">
+      <div id="selections"></div>
+      <div id="genomes"></div>
+    </div>
+    <div id="pit"></div>
+  </body>
+
+  <style>
+    body{
+      margin: 0
+    }
+    #repository{
+      position: fixed;
+      height: 0px;
+      width: 100%;
+      padding: 40px;
+      padding-bottom: 0;
+      background: rgba(0,0,0,0.05);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      z-index: 1;
+      transition: all 0.4s;
+    }
+    #container{
+      display: none;
+    }
+    #directoryContainer{
+      position: absolute;
+      width: 20%;
+      height: 80%;
+    }
+    #directoryContainer *{
+      display: block;
+    }
+    #display{
+      position: absolute;
+      left: 20%;
+      padding: 20px;
+      width: 40%;
+      height: 100%;
+    }
+    #close{
+      position: fixed;
+      margin: 5px;
+      right: 0; top: 0;
+      z-index: 2;
+    }
+    #open{
+      position: fixed;
+      margin: 5px;
+      left: 0; top: 0;
+      z-index: 2;
+    }
+    #panel{
+      position: fixed;
+      height: 150px;
+      width: 100%;
+      padding: 10px;
+      padding-top: 50px;
+      background: white;
+      background: rgb(240,240,240);
+      border-bottom: 1px solid lightGray;
+    }
+    #pit{
+      padding: 10px;
+      padding-top: 210px;
+    }
+    .phenoContainer{
+      display: inline-block;
+      margin: 5px;
+      padding: 10px;
+      border: 1px dotted lightGray;
+    }
+  </style>
+
+  <script src="functions.js"></script>
+  <script src="stage.js"></script>
+
+  <script>
+
+    var repoSelection = []
+    var open = document.getElementById('open')
+    var close = document.getElementById('close')
+    var container = document.getElementById('container')
+    var repo = document.getElementById('repository')
+    var display = document.getElementById('display')
+    var crossoverButton = document.getElementById('crossover')
+    var composeButton = document.getElementById('compose')
+
+    open.onclick = function(){
+      repo.style.height = '100%'
+      repo.style.background = 'rgba(240,240,240,1)'
+      container.style.display = 'block'
+      var dir = document.getElementById('directory')
+      dir.innerHTML = ''
+      var genomes = getGenomes()
+      for(var i in genomes){
+        var genome = document.createElement('OPTION')
+        genome.innerHTML = genomes[i]
+        genome.value = genomes[i]
+        dir.appendChild(genome)
+      }
+      dir.onchange = function(){
+        display.innerHTML = ''
+        var selected = document.querySelectorAll('#directory option:checked')
+        repoSelection = []
+        // repoSelection.push(e.target.value)
+        for(var i in selected){
+          var select = selected[i]
+          if(select.value){
+            repoSelection.push(select.value)
+            var genotype = express(Store[select.value])
+            genotype.style.display = 'block'
+            display.appendChild(genotype)
+          }
+        }
+      }
+    }
+    close.onclick = function(){
+      repo.style.height = '0px'
+      repo.style.background = 'rgba(0,0,0,0.05)'
+      container.style.display = 'none'
+    }
+    crossoverButton.onclick = function(){
+      if(repoSelection.length > 2){
+        genepool = regenerate(Store,repoSelection,400)
+        repoSelection = []
+        selection = []
+        population = populate(genepool)
+        render(population,genepool)
+        close.click()
+      }
+    }
+    composeButton.onclick = function(){
+      if(repoSelection.length > 2){
+        var components = []
+        for(var i = 0; i < POPULATION_SIZE; i++){
+          var a = 0; var b = 0;
+          while(a == b){
+            a = Math.floor(Math.random() * repoSelection.length)
+            b = Math.floor(Math.random() * repoSelection.length)
+          }
+          components.push(compose(Store[repoSelection[a]],Store[repoSelection[b]]))
+        }
+        genepool = components
+        repoSelection = []
+        selection = []
+        population = populate(components)
+        render(population,genepool)
+        close.click()
+      }
+    }
+
+  </script>
+
+</html>
